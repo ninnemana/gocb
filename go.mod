@@ -1,4 +1,4 @@
-module github.com/couchbase/gocb/v2
+module github.com/ninnemana/gocb/v2
 
 require (
 	github.com/couchbase/gocbcore/v8 v8.0.4
