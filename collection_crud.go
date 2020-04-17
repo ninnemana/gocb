@@ -1,11 +1,13 @@
 package gocb
 
 import (
+	"context"
 	"errors"
 	"sync"
 	"time"
 
 	gocbcore "github.com/couchbase/gocbcore/v8"
+	"github.com/opentracing/opentracing-go"
 )
 
 type kvProvider interface {
@@ -114,12 +116,15 @@ type UpsertOptions struct {
 }
 
 // Upsert creates a new document in the Collection if it does not exist, if it does exist then it updates it.
-func (c *Collection) Upsert(id string, val interface{}, opts *UpsertOptions) (mutOut *MutationResult, errOut error) {
+func (c *Collection) Upsert(ctx context.Context, id string, val interface{}, opts *UpsertOptions) (mutOut *MutationResult, errOut error) {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "Collection.Upsert")
+	defer span.Finish()
+
 	if opts == nil {
 		opts = &UpsertOptions{}
 	}
 
-	opm := c.newKvOpManager("Upsert", nil)
+	opm := c.newKvOpManager("Upsert", span.Context())
 	defer opm.Finish()
 
 	opm.SetDocumentID(id)
